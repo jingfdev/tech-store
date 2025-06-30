@@ -14,7 +14,13 @@
                     Welcome to Tech Store
                 </h2>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    Sign in to your account or create a new one
+                    Sign in to your account
+                </p>
+                <p class="mt-1 text-xs text-gray-500">
+                    Don't have an account? 
+                    <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Sign up here
+                    </a>
                 </p>
             </div>
             

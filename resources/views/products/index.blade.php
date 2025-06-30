@@ -49,7 +49,7 @@
                             <div class="px-4 py-5 sm:p-6">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900 hover:text-blue-600">{{ $category->name }}</h3>
                                 <p class="mt-1 text-sm text-gray-500">{{ $category->description }}</p>
-                                <p class="mt-2 text-sm text-blue-600">{{ $category->products->count() }} products</p>
+                                <p class="mt-2 text-sm text-blue-600">{{ $category->products_count }} products</p>
                                 <div class="mt-3">
                                     <span class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                         View products

@@ -19,6 +19,11 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
+// Register page
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
+
 // Social authentication routes
 Route::get('/auth/{provider}', [SocialAuthController::class, 'redirectToProvider'])->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])->name('social.callback');
