@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Exception;
 
 class SocialAuthController extends Controller
@@ -13,16 +15,24 @@ class SocialAuthController extends Controller
     /**
      * Redirect to provider for authentication
      */
-    public function redirectToProvider($provider)
+    public function redirectToProvider(string $provider)
     {
+        // Validate provider
+        if (!in_array($provider, ['google', 'github'])) {
+            return redirect('/login')->with('error', 'Unsupported authentication provider.');
+        }
         return Socialite::driver($provider)->redirect();
     }
 
     /**
      * Handle provider callback
      */
-    public function handleProviderCallback($provider)
+    public function handleProviderCallback(string $provider)
     {
+        // Validate provider
+        if (!in_array($provider, ['google', 'github'])) {
+            return redirect('/login')->with('error', 'Unsupported authentication provider.');
+        }
         try {
             $socialUser = Socialite::driver($provider)->user();
             
@@ -31,8 +41,8 @@ class SocialAuthController extends Controller
             $isNewUser = false;
             
             // Also check if this social account is already linked to a different user
-            $existingSocialUser = User::where('provider', $provider)
-                ->where('provider_id', $socialUser->getId())
+            $existingSocialUser = User::where('provider_id', $socialUser->getId())
+                ->where('provider', $provider)
                 ->first();
             
             if ($existingSocialUser && $existingSocialUser->email !== $socialUser->getEmail()) {
@@ -42,8 +52,8 @@ class SocialAuthController extends Controller
             }
             
             if ($user) {
-                // Update provider info if user exists but doesn't have this provider linked
-                if ($user->provider !== $provider || $user->provider_id !== $socialUser->getId()) {
+                // Update provider info if user exists but doesn't have social account linked
+                if (empty($user->provider_id) || $user->provider_id !== $socialUser->getId()) {
                     $user->update([
                         'provider' => $provider,
                         'provider_id' => $socialUser->getId(),
@@ -54,6 +64,7 @@ class SocialAuthController extends Controller
                 $user = User::create([
                     'name' => $socialUser->getName() ?: 'User',
                     'email' => $socialUser->getEmail(),
+                    'password' => Hash::make(Str::random(24)), // Generate random password
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
                 ]);

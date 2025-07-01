@@ -25,8 +25,10 @@ Route::get('/register', function () {
 })->name('register');
 
 // Social authentication routes
-Route::get('/auth/{provider}', [SocialAuthController::class, 'redirectToProvider'])->name('social.redirect');
-Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])->name('social.callback');
+Route::controller(SocialAuthController::class)->group(function () {
+    Route::get('/auth/{provider}', 'redirectToProvider')->name('social.redirect');
+    Route::get('/auth/{provider}/callback', 'handleProviderCallback')->name('social.callback');
+});
 
 // Dashboard (protected route)
 Route::get('/dashboard', function () {

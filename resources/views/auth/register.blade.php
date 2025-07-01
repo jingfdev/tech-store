@@ -106,7 +106,7 @@
                     </a>
 
                     <!-- GitHub Sign Up Button -->
-                    <a href="{{ route('social.redirect', 'github') }}" 
+                    <a href="{{ route('social.redirect', 'github') }}"
                        class="group relative w-full flex justify-center py-3 px-4 border border-gray-800 text-sm font-medium rounded-lg text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 shadow-sm hover:shadow-md">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">

@@ -72,7 +72,10 @@
                 @foreach($products as $product)
                     <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300">
                         <div class="aspect-w-3 aspect-h-2">
-                            <img src="{{ $product->image }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
+                            <img src="{{ $product->image }}" 
+                                 alt="{{ $product->name }}" 
+                                 class="w-full h-48 object-cover"
+                                 onerror="this.src='https://via.placeholder.com/400x300?text={{ urlencode($product->name) }}';this.onerror=null;">
                         </div>
                         <div class="px-6 py-4">
                             <div class="font-bold text-xl mb-2">{{ $product->name }}</div>
