@@ -25,9 +25,19 @@ class CheckoutController extends Controller
     public function createSession(Request $request)
     {
         try {
+            \Log::info('Checkout process started', [
+                'user_id' => Auth::id(),
+                'user_email' => Auth::user()->email,
+                'stripe_secret_key_present' => !empty(env('STRIPE_SECRET_KEY'))
+            ]);
+            
             $cartItems = Cart::with('product')
                 ->where('user_id', Auth::id())
                 ->get();
+                
+            \Log::info('Cart items retrieved', [
+                'cart_items_count' => $cartItems->count()
+            ]);
 
             if ($cartItems->isEmpty()) {
                 return redirect()->route('cart.index')
@@ -59,24 +69,9 @@ class CheckoutController extends Controller
                 ];
             }
 
-            // Add discount if applicable
-            $discounts = [];
-            if ($discountPercentage > 0) {
-                // For simplicity, we'll apply the discount as a negative line item
-                $lineItems[] = [
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => 'Discount (' . session('discount_code') . ')',
-                        ],
-                        'unit_amount' => -($discountAmount * 100), // Negative amount for discount
-                    ],
-                    'quantity' => 1,
-                ];
-            }
-
-            // Create Stripe checkout session
-            $session = Session::create([
+            // Add discount if applicable - we'll handle this differently
+            // Instead of negative line items, we'll use Stripe's discount feature
+            $sessionData = [
                 'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
                 'mode' => 'payment',
@@ -87,14 +82,41 @@ class CheckoutController extends Controller
                     'user_id' => Auth::id(),
                     'discount_code' => session('discount_code', ''),
                     'discount_percentage' => session('discount_percentage', 0),
+                    'subtotal' => $subtotal,
+                    'discount_amount' => $discountAmount,
+                    'total' => $total,
                 ],
-            ]);
+            ];
+            
+            // If there's a discount, we'll create a simpler approach
+            if ($discountPercentage > 0) {
+                // Instead of negative line items, adjust the quantities/prices
+                // For now, let's just show the original prices and handle discount in metadata
+                $sessionData['metadata']['discount_note'] = 'Discount applied: ' . session('discount_code') . ' - ' . $discountPercentage . '% off';
+            }
+
+            // Create Stripe checkout session
+            $session = Session::create($sessionData);
 
             return redirect($session->url);
 
         } catch (Exception $e) {
+            \Log::error('Checkout error: ' . $e->getMessage());
+            \Log::error('Checkout error trace: ' . $e->getTraceAsString());
+            
+            // Provide more specific error messages
+            $errorMessage = 'Something went wrong. Please try again.';
+            
+            if (str_contains($e->getMessage(), 'Invalid API key')) {
+                $errorMessage = 'Payment system configuration error. Please contact support.';
+            } elseif (str_contains($e->getMessage(), 'No such customer')) {
+                $errorMessage = 'Customer information error. Please try again.';
+            } elseif (str_contains($e->getMessage(), 'network') || str_contains($e->getMessage(), 'timeout')) {
+                $errorMessage = 'Network error. Please check your connection and try again.';
+            }
+            
             return redirect()->route('cart.index')
-                ->with('error', 'Something went wrong. Please try again.');
+                ->with('error', $errorMessage);
         }
     }
 

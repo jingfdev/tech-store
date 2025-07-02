@@ -48,6 +48,24 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
+// Test Stripe configuration (remove in production)
+Route::get('/test-stripe', function () {
+    try {
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+        $account = \Stripe\Account::retrieve();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Stripe connection successful!',
+            'account_id' => $account->id
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Stripe error: ' . $e->getMessage()
+        ]);
+    }
+});
+
 // Product routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
