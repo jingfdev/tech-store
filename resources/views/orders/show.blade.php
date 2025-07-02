@@ -33,6 +33,18 @@
     </nav>
 
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+        @endif
+
         <!-- Breadcrumb -->
         <nav class="flex mb-8" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -182,10 +194,10 @@
                 
                 @if($order->canBeCancelled())
                     <form action="{{ route('orders.cancel', $order) }}" method="POST" class="inline" 
-                          onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                          onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                             Cancel Order
                         </button>
                     </form>

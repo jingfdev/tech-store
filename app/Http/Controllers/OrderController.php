@@ -48,8 +48,16 @@ class OrderController extends Controller
 
         // Check if the order can be cancelled
         if (!$order->canBeCancelled()) {
+            $errorMessage = 'This order cannot be cancelled.';
+            
+            if ($order->status === 'cancelled') {
+                $errorMessage = 'This order has already been cancelled.';
+            } elseif ($order->status === 'completed' && $order->created_at->diffInHours(now()) > 24) {
+                $errorMessage = 'Completed orders can only be cancelled within 24 hours of placement.';
+            }
+            
             return redirect()->route('orders.index')
-                ->with('error', 'This order cannot be cancelled.');
+                ->with('error', $errorMessage);
         }
 
         // Update order status to cancelled

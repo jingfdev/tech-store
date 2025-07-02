@@ -34,7 +34,22 @@
 
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Order History</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Order History</h2>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            <strong>Cancellation Policy:</strong> Pending orders can be cancelled anytime. Completed orders can be cancelled within 24 hours of placement.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             @if(session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -102,15 +117,15 @@
                             </div>
 
                             <div class="flex justify-between items-center">
-                                <a href="{{ route('orders.show', $order) }}" class="text-blue-600 hover:text-blue-900">
+                                <a href="{{ route('orders.show', $order) }}" class="text-blue-600 hover:text-blue-900 font-medium">
                                     View Details
                                 </a>
                                 @if($order->canBeCancelled())
                                     <form action="{{ route('orders.cancel', $order) }}" method="POST" class="inline" 
-                                          onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                                          onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">
+                                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
                                             Cancel Order
                                         </button>
                                     </form>

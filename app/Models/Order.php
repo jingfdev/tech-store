@@ -42,6 +42,21 @@ class Order extends Model
      */
     public function canBeCancelled(): bool
     {
-        return $this->status === 'pending';
+        // Can't cancel already cancelled orders
+        if ($this->status === 'cancelled') {
+            return false;
+        }
+        
+        // Allow cancellation of pending orders anytime
+        if ($this->status === 'pending') {
+            return true;
+        }
+        
+        // Allow cancellation of completed orders within 24 hours
+        if ($this->status === 'completed') {
+            return $this->created_at->diffInHours(now()) <= 24;
+        }
+        
+        return false;
     }
 }
