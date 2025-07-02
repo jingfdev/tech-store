@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartController;
@@ -28,6 +29,12 @@ Route::get('/register', function () {
 Route::controller(SocialAuthController::class)->group(function () {
     Route::get('/auth/{provider}', 'redirectToProvider')->name('social.redirect');
     Route::get('/auth/{provider}/callback', 'handleProviderCallback')->name('social.callback');
+});
+
+// Registration routes
+Route::controller(RegisterController::class)->group(function () {
+    Route::post('/register/complete-social', 'completeSocialRegistration')->name('register.complete-social');
+    Route::post('/register/cancel-social', 'cancelSocialRegistration')->name('register.cancel-social');
 });
 
 // Dashboard (protected route)

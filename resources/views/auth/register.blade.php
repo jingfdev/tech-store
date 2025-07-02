@@ -57,6 +57,55 @@
                 </div>
             @endif
             
+            <!-- Info Messages -->
+            @if(session('info'))
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">{{ session('info') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
+            @if(session('social_user_data'))
+                <!-- Social Registration Confirmation -->
+                <div class="bg-white py-8 px-6 shadow-lg rounded-xl border border-gray-200">
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-medium text-gray-900">Complete Your Registration</h3>
+                        <p class="text-sm text-gray-600 mt-2">
+                            We found your {{ ucfirst(session('social_user_data.provider')) }} account:
+                        </p>
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <p class="font-medium text-gray-900">{{ session('social_user_data.name') }}</p>
+                            <p class="text-sm text-gray-600">{{ session('social_user_data.email') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <form action="{{ route('register.complete-social') }}" method="POST">
+                            @csrf
+                            <button type="submit" 
+                                    class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                                <i class="fas fa-check mr-2"></i>
+                                Create My Account
+                            </button>
+                        </form>
+                        
+                        <form action="{{ route('register.cancel-social') }}" method="POST">
+                            @csrf
+                            <button type="submit" 
+                                    class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @else
             <!-- Social Sign Up Form -->
             <div class="mt-8 bg-white py-8 px-6 shadow-lg rounded-xl border border-gray-200">
                 <div class="space-y-4">
@@ -145,6 +194,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Additional Links -->
             <div class="text-center">

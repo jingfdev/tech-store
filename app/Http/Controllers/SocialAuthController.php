@@ -36,55 +36,59 @@ class SocialAuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
             
-            // Check if user already exists by email
-            $user = User::where('email', $socialUser->getEmail())->first();
-            $isNewUser = false;
-            
-            // Also check if this social account is already linked to a different user
-            $existingSocialUser = User::where('provider_id', $socialUser->getId())
+            // Check if this exact social account exists (provider + provider_id)
+            $existingUser = User::where('provider_id', $socialUser->getId())
                 ->where('provider', $provider)
                 ->first();
             
-            if ($existingSocialUser && $existingSocialUser->email !== $socialUser->getEmail()) {
-                // This social account is linked to a different email
-                return redirect('/login')->with('error', 
-                    'This ' . ucfirst($provider) . ' account is already linked to a different email address. Please use the correct account or contact support.');
-            }
-            
-            if ($user) {
-                // Update provider info if user exists but doesn't have social account linked
-                if (empty($user->provider_id) || $user->provider_id !== $socialUser->getId()) {
-                    $user->update([
-                        'provider' => $provider,
-                        'provider_id' => $socialUser->getId(),
-                    ]);
-                }
-            } else {
-                // Create new user (sign up)
-                $user = User::create([
-                    'name' => $socialUser->getName() ?: 'User',
-                    'email' => $socialUser->getEmail(),
-                    'password' => Hash::make(Str::random(24)), // Generate random password
-                    'provider' => $provider,
-                    'provider_id' => $socialUser->getId(),
-                ]);
-                $isNewUser = true;
-            }
-            
-            Auth::login($user);
-            
-            // Redirect with appropriate welcome message
-            if ($isNewUser) {
-                return redirect()->intended('/dashboard')
-                    ->with('success', 'Welcome to Tech Store! Your account has been created successfully.');
-            } else {
+            if ($existingUser) {
+                // User exists with this social account - sign them in
+                Auth::login($existingUser);
                 return redirect()->intended('/dashboard')
                     ->with('success', 'Welcome back! You have been logged in successfully.');
+            } else {
+                // Check if email already exists with a different provider
+                $existingEmailUser = User::where('email', $socialUser->getEmail())->first();
+                
+                if ($existingEmailUser) {
+                    // Email exists with different provider
+                    $existingProvider = ucfirst($existingEmailUser->provider);
+                    return redirect('/login')
+                        ->with('error', 'This email is already registered with ' . $existingProvider . '. Please sign in with ' . $existingProvider . ' instead.');
+                }
+                
+                // User doesn't exist - redirect to register with message
+                session([
+                    'social_user_data' => [
+                        'name' => $socialUser->getName() ?: 'User',
+                        'email' => $socialUser->getEmail(),
+                        'provider' => $provider,
+                        'provider_id' => $socialUser->getId(),
+                    ]
+                ]);
+                
+                return redirect('/register')
+                    ->with('info', 'You don\'t have an account yet. Let\'s create one for you with your ' . ucfirst($provider) . ' information.');
             }
             
         } catch (Exception $e) {
             \Log::error('Social auth error: ' . $e->getMessage());
-            return redirect('/login')->with('error', 'Authentication failed. Please try again. If the problem persists, please contact support.');
+            
+            // Handle specific error cases
+            $errorMessage = $e->getMessage();
+            
+            // Check if it's a user cancellation (user clicked "Cancel" on OAuth screen)
+            if (str_contains($errorMessage, 'access_denied') || str_contains($errorMessage, 'user_denied')) {
+                return redirect('/login')->with('info', 'Sign in was cancelled. Please try again when you\'re ready.');
+            }
+            
+            // Check if it's a network/OAuth provider issue
+            if (str_contains($errorMessage, 'cURL') || str_contains($errorMessage, 'timeout') || str_contains($errorMessage, 'SSL')) {
+                return redirect('/login')->with('error', 'Unable to connect to ' . ucfirst($provider) . '. Please check your internet connection and try again.');
+            }
+            
+            // For any other authentication errors, provide a more helpful message
+            return redirect('/login')->with('error', 'We couldn\'t sign you in with ' . ucfirst($provider) . '. Please try again or contact support if the problem continues.');
         }
     }
 }
