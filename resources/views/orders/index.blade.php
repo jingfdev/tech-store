@@ -45,7 +45,10 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
-                            <strong>Cancellation Policy:</strong> Pending orders can be cancelled anytime. Completed orders can be cancelled within 24 hours of placement.
+                            <strong>Order Policy:</strong> Pending orders can be cancelled anytime. Once verified via email, orders become completed and cannot be cancelled.
+                        </p>
+                        <p class="text-xs text-blue-600 mt-1">
+                            <a href="{{ route('test.verification') }}" class="underline">Test Email Verification</a> (Development only)
                         </p>
                     </div>
                 </div>
@@ -80,11 +83,8 @@
                                     <p class="text-sm text-gray-600">Placed on {{ $order->created_at->format('M d, Y \a\t g:i A') }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($order->status === 'completed') bg-green-100 text-green-800
-                                        @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
-                                        @else bg-red-100 text-red-800 @endif">
-                                        {{ ucfirst($order->status) }}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $order->getStatusBadgeClasses() }}">
+                                        {{ $order->getDisplayStatus() }}
                                     </span>
                                 </div>
                             </div>

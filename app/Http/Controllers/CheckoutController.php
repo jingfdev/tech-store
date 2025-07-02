@@ -7,6 +7,8 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Exception;
@@ -135,12 +137,12 @@ class CheckoutController extends Controller
                     ->where('user_id', Auth::id())
                     ->get();
 
-                // Create order
+                // Create order as pending (requires email verification)
                 $order = Order::create([
                     'user_id' => Auth::id(),
                     'stripe_payment_intent_id' => $session->payment_intent,
                     'total_amount' => $session->amount_total / 100, // Convert from cents
-                    'status' => 'completed',
+                    'status' => 'pending',
                     'discount_code' => $session->metadata->discount_code ?? null,
                     'discount_percentage' => $session->metadata->discount_percentage ?? 0,
                 ]);
@@ -161,6 +163,9 @@ class CheckoutController extends Controller
                 // Clear discount session
                 session()->forget(['discount_code', 'discount_percentage']);
                 
+                // Send order verification email
+                $this->sendOrderVerificationEmail($order);
+                
                 return view('checkout.success', compact('session', 'order'));
             }
 
@@ -170,6 +175,65 @@ class CheckoutController extends Controller
         } catch (Exception $e) {
             return redirect()->route('cart.index')
                 ->with('error', 'Error processing payment confirmation.');
+        }
+    }
+    
+    /**
+     * Send order verification email.
+     */
+    private function sendOrderVerificationEmail(Order $order)
+    {
+        try {
+            // Generate verification token
+            $token = Str::random(64);
+            
+            // Store token in order or create a separate verification table
+            // For now, we'll store it in the order's stripe_payment_intent_id field temporarily
+            // In production, you'd want a separate verification_tokens table
+            $order->update(['verification_token' => $token]);
+            
+            // Send email (for now, we'll just log it since we don't have mail setup)
+            \Log::info('Order verification email would be sent', [
+                'order_id' => $order->id,
+                'user_email' => $order->user->email,
+                'verification_url' => route('order.verify', ['token' => $token])
+            ]);
+            
+            // TODO: Implement actual email sending
+            // Mail::to($order->user->email)->send(new OrderVerificationMail($order, $token));
+            
+        } catch (Exception $e) {
+            \Log::error('Failed to send order verification email: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Verify order via email token.
+     */
+    public function verifyOrder(Request $request, $token)
+    {
+        try {
+            $order = Order::where('verification_token', $token)
+                ->where('status', 'pending')
+                ->first();
+                
+            if (!$order) {
+                return redirect()->route('orders.index')
+                    ->with('error', 'Invalid or expired verification link.');
+            }
+            
+            // Mark order as completed
+            $order->update([
+                'status' => 'completed',
+                'verification_token' => null // Clear the token
+            ]);
+            
+            return redirect()->route('orders.show', $order)
+                ->with('success', 'Order verified successfully! Your order is now confirmed.');
+                
+        } catch (Exception $e) {
+            return redirect()->route('orders.index')
+                ->with('error', 'Error verifying order.');
         }
     }
 }

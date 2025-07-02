@@ -72,11 +72,8 @@
                     <p class="text-gray-600">Placed on {{ $order->created_at->format('M d, Y \a\t g:i A') }}</p>
                 </div>
                 <div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                        @if($order->status === 'completed') bg-green-100 text-green-800
-                        @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
-                        @else bg-red-100 text-red-800 @endif">
-                        {{ ucfirst($order->status) }}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $order->getStatusBadgeClasses() }}">
+                        {{ $order->getDisplayStatus() }}
                     </span>
                 </div>
             </div>
@@ -150,7 +147,7 @@
                         @endif
                         <div class="flex justify-between">
                             <span class="text-gray-600">Payment Status:</span>
-                            <span class="font-semibold">{{ ucfirst($order->status) }}</span>
+                            <span class="font-semibold">{{ $order->getDisplayStatus() }}</span>
                         </div>
                         @if($order->discount_code)
                             <div class="flex justify-between">

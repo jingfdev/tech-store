@@ -15,6 +15,7 @@ class Order extends Model
         'status',
         'discount_code',
         'discount_percentage',
+        'verification_token',
     ];
 
     protected $casts = [
@@ -39,24 +40,45 @@ class Order extends Model
 
     /**
      * Check if the order can be cancelled.
+     * Only pending orders can be cancelled. Once completed (via email verification), they cannot be cancelled.
      */
     public function canBeCancelled(): bool
     {
-        // Can't cancel already cancelled orders
-        if ($this->status === 'cancelled') {
-            return false;
+        // Only pending orders can be cancelled
+        return $this->status === 'pending';
+    }
+    
+    /**
+     * Get the display status for the order.
+     */
+    public function getDisplayStatus(): string
+    {
+        switch ($this->status) {
+            case 'pending':
+                return 'Pending';
+            case 'completed':
+                return 'Completed';
+            case 'cancelled':
+                return 'Cancelled';
+            default:
+                return ucfirst($this->status);
         }
-        
-        // Allow cancellation of pending orders anytime
-        if ($this->status === 'pending') {
-            return true;
+    }
+    
+    /**
+     * Get the CSS classes for the status badge.
+     */
+    public function getStatusBadgeClasses(): string
+    {
+        switch ($this->status) {
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
         }
-        
-        // Allow cancellation of completed orders within 24 hours
-        if ($this->status === 'completed') {
-            return $this->created_at->diffInHours(now()) <= 24;
-        }
-        
-        return false;
     }
 }

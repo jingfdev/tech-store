@@ -91,3 +91,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 });
+
+// Order verification route (public - doesn't need auth)
+Route::get('/order/verify/{token}', [CheckoutController::class, 'verifyOrder'])->name('order.verify');
+
+// Testing route for email verification (remove in production)
+Route::get('/test-verification', function() {
+    return view('test-verification');
+})->name('test.verification');

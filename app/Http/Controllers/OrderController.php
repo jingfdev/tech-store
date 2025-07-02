@@ -50,20 +50,18 @@ class OrderController extends Controller
         if (!$order->canBeCancelled()) {
             $errorMessage = 'This order cannot be cancelled.';
             
-            if ($order->status === 'cancelled') {
-                $errorMessage = 'This order has already been cancelled.';
-            } elseif ($order->status === 'completed' && $order->created_at->diffInHours(now()) > 24) {
-                $errorMessage = 'Completed orders can only be cancelled within 24 hours of placement.';
+            if ($order->status === 'completed') {
+                $errorMessage = 'Completed orders cannot be cancelled. If you have concerns, please contact support.';
             }
             
             return redirect()->route('orders.index')
                 ->with('error', $errorMessage);
         }
 
-        // Update order status to cancelled
-        $order->update(['status' => 'cancelled']);
+        // Delete the order and its items (cascade will handle order_items)
+        $order->delete();
 
         return redirect()->route('orders.index')
-            ->with('success', 'Order has been cancelled successfully.');
+            ->with('success', 'Order has been cancelled and removed from your order history.');
     }
 }
