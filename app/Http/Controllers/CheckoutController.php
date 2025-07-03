@@ -228,7 +228,7 @@ class CheckoutController extends Controller
                 'verification_token' => null // Clear the token
             ]);
             
-            return redirect()->route('orders.show', $order)
+            return redirect()->route('orders.index')
                 ->with('success', 'Order verified successfully! Your order is now confirmed.');
                 
         } catch (Exception $e) {

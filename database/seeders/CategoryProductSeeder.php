@@ -14,11 +14,11 @@ class CategoryProductSeeder extends Seeder
     {
         // Create categories
         $categories = [
-            ['name' => 'Mouse', 'description' => 'Computer mice and accessories'],
-            ['name' => 'Keyboard', 'description' => 'Mechanical and membrane keyboards'],
-            ['name' => 'Headset', 'description' => 'Gaming and professional headsets'],
-            ['name' => 'Monitor', 'description' => 'Gaming and professional monitors'],
-            ['name' => 'Speakers', 'description' => 'Desktop and portable speakers'],
+            ['name' => 'Mouse', 'slug' => 'mouse', 'description' => 'Computer mice and accessories'],
+            ['name' => 'Keyboard', 'slug' => 'keyboard', 'description' => 'Mechanical and membrane keyboards'],
+            ['name' => 'Headset', 'slug' => 'headset', 'description' => 'Gaming and professional headsets'],
+            ['name' => 'Monitor', 'slug' => 'monitor', 'description' => 'Gaming and professional monitors'],
+            ['name' => 'Speakers', 'slug' => 'speakers', 'description' => 'Desktop and portable speakers'],
         ];
 
         foreach ($categories as $categoryData) {
